@@ -1,4 +1,6 @@
+import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
+import { Auth } from './services/auth';
 
 export const routes: Routes = [
   {
@@ -8,5 +10,6 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     loadComponent: () => import('./pages/dashboard/dashboard').then((mod) => mod.Dashboard),
+    canActivate: [() => inject(Auth).isLoggedIn()],
   },
 ];

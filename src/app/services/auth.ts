@@ -1,8 +1,9 @@
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { inject, Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { filter, map, switchMap } from 'rxjs/operators';
+import { Router, UrlTree } from '@angular/router';
 
 export const USER_STORAGE_KEY = 'AUTH_KEY';
 
@@ -19,7 +20,7 @@ export class Auth {
     UserData | null | undefined
   >(undefined);
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     this.loadUser();
   }
 
@@ -72,6 +73,20 @@ export class Auth {
   }
 
   getCurrentUserId() {
-    this.user.getValue()!.id;
+    return this.user.getValue()?.id;
+  }
+
+  isLoggedIn(): Observable<boolean | UrlTree> {
+    const router = inject(Router);
+    return this.getCurrentUser().pipe(
+      filter((user) => user !== undefined),
+      map((isAuth) => {
+        if (isAuth) {
+          return true;
+        } else {
+          return router.createUrlTree(['/']);
+        }
+      })
+    );
   }
 }
