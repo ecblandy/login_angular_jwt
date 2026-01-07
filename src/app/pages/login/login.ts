@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Auth } from '../../services/auth';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -11,7 +13,7 @@ export class Login {
   form;
   error = '';
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private authService: Auth, private router: Router) {
     this.form = this.fb.nonNullable.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -20,9 +22,33 @@ export class Login {
 
   onSubmit() {
     console.log('SUBMIT', this.form.value);
+    const { email, password } = this.form.getRawValue();
+
+    this.authService.login(email, password).subscribe({
+      next: (res) => {
+        console.log('login done', res);
+        this.router.navigateByUrl('/dashboard');
+      },
+      error: (err) => {
+        this.error = 'Login Failed';
+      },
+    });
   }
 
   createAccount() {
-    console.log('create', this.form.value);
+    const { email, password } = this.form.getRawValue();
+
+    this.authService.register(email, password).subscribe({
+      next: () => {
+        // login manual depois
+        this.authService.login(email, password).subscribe(() => {
+          this.router.navigateByUrl('/dashboard');
+        });
+      },
+      error: (err) => {
+        console.error(err);
+        this.error = err.error?.msg ?? 'Registration Failed';
+      },
+    });
   }
 }

@@ -85,6 +85,9 @@
           Sign in
         </button>
       </div>
+      <p *ngIf="error" class="mt-2 text-sm text-red-600 text-center">
+        {{ error }}
+      </p>
     </form>
   </div>
 </div>
